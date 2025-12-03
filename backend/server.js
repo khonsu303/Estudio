@@ -19,8 +19,23 @@ const app = express();
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Configuración de CORS para permitir múltiples orígenes
+const allowedOrigins = [
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'https://johannaestudio.netlify.app'
+];
+
 app.use(cors({
-    origin: 'http://localhost:3000', // URL del frontend
+    origin: function (origin, callback) {
+        // Permitir peticiones sin origin (como Postman) o desde orígenes permitidos
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('No permitido por CORS'));
+        }
+    },
     credentials: true
 }));
 
