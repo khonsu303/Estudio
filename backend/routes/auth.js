@@ -24,15 +24,19 @@ router.post('/register', [
         }
 
         const { name, email, password } = req.body;
+        console.log('📝 Intentando registrar usuario:', { name, email });
 
         // Verificar si el usuario ya existe
         const userExists = await User.findOne({ email });
         if (userExists) {
+            console.log('⚠️ Usuario ya existe:', email);
             return res.status(400).json({
                 success: false,
                 message: 'El usuario ya existe con ese email'
             });
         }
+
+        console.log('✅ Usuario no existe, creando...');
 
         // Crear usuario
         const user = await User.create({
@@ -40,6 +44,8 @@ router.post('/register', [
             email,
             password
         });
+
+        console.log('✅ Usuario creado exitosamente:', user._id);
 
         // Generar token
         const token = generateToken(user._id);
@@ -56,7 +62,11 @@ router.post('/register', [
             }
         });
     } catch (error) {
-        console.error('Error en registro:', error);
+        console.error('❌ Error en registro:', error);
+        console.error('Error name:', error.name);
+        console.error('Error code:', error.code);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
 
         // Manejar error de email duplicado
         if (error.code === 11000) {
@@ -78,7 +88,8 @@ router.post('/register', [
         res.status(500).json({
             success: false,
             message: 'Error al registrar usuario',
-            error: process.env.NODE_ENV === 'development' ? error.message : 'Error interno del servidor'
+            error: error.message,
+            details: error.stack
         });
     }
 });
