@@ -57,10 +57,28 @@ router.post('/register', [
         });
     } catch (error) {
         console.error('Error en registro:', error);
+
+        // Manejar error de email duplicado
+        if (error.code === 11000) {
+            return res.status(400).json({
+                success: false,
+                message: 'El email ya está registrado'
+            });
+        }
+
+        // Manejar errores de validación de Mongoose
+        if (error.name === 'ValidationError') {
+            const messages = Object.values(error.errors).map(err => err.message);
+            return res.status(400).json({
+                success: false,
+                message: messages.join(', ')
+            });
+        }
+
         res.status(500).json({
             success: false,
             message: 'Error al registrar usuario',
-            error: error.message
+            error: process.env.NODE_ENV === 'development' ? error.message : 'Error interno del servidor'
         });
     }
 });
